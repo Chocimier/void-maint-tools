@@ -1,0 +1,58 @@
+#!/usr/bin/env fish
+#
+# Fetches PR and builds package.
+#
+# Install userjs file in browser, triple-click on command under PR page title, middle click in terminal.
+
+function main
+
+assert_xbps_src_dir
+
+# parse arguments
+set flags r/remote= u/url= b/branch= p/pkgname= B/no-build
+
+if not test "$argv"
+	echo $flags
+	exit 1
+end
+
+argparse $flags -- $argv
+
+# error if arguments lack
+set -l remote $_flag_remote
+test "$remote"; or begin echo pass --remote; exit 2; end
+
+set -l branch $_flag_branch
+test "$branch"; or begin echo pass --branch; exit 2; end
+
+# guess pkgname if not given
+set -l pkgname $_flag_pkgname
+if test -z "$pkgname"
+	set pkgname $branch
+end
+set -l url $_flag_url
+
+# configure remote
+if git config 'remote.'$remote'.url' > /dev/null
+	if test "$url"
+		git remote set-url $remote $url
+	end
+else
+	test "$url"; or begin echo pass --url; exit 2; end
+	git remote add $remote $url
+end
+
+# fetch
+git fetch --prune $remote
+git checkout $remote/$branch; or exit 3
+git fetch origin
+git rebase --autostash origin/master; or exit 4
+
+# build
+if not set -q _flag_B
+	pack $pkgname
+end
+
+end # main
+
+main $argv

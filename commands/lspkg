@@ -1,0 +1,12 @@
+#!/usr/bin/env fish
+# Lists contents of possibly not installed package using xlocate cache.
+#
+# Requires to fetch cache with "xlocate -S" first.
+
+test "$XDG_CACHE_HOME"; or set XDG_CACHE_HOME ~/.cache
+test "$XLOCATE_GIT"; or set XLOCATE_GIT "$XDG_CACHE_HOME/xlocate.git"
+
+cd "$XLOCATE_GIT"
+set pkgver (git --bare ls-tree -r master --name-only | grep -P '^'$argv[1]'-[^-]+$')
+test "$pkgver"; or set pkgver $argv[1]
+git --bare show master:$pkgver | uniq

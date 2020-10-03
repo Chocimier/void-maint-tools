@@ -1,0 +1,27 @@
+#compdef pack
+
+_pack() {
+	local curcontext="$curcontext" state line
+	typeset -A opt_args
+	local -a pack_switches=( "-a" "-m" "-s" "--available" "--" )
+
+	case $words[-2] in
+	-a)
+		compadd "$@" $(ls common/cross-profiles/ | grep -P '\.sh$' | grep -v musl | xargs -n 1 basename -s .sh)
+	;;
+	-m)
+		compadd "$@" $(ls | grep -F 'masterdir-' | cut -d - -f 2-)
+	;;
+	-s)
+		compadd "$@" $(./xbps-src | grep pkgname | grep -P '^\S'| cut -d \  -f 1)
+	;;
+	--)
+		compadd "$@" $(ls srcpkgs)
+	;;
+	*)
+		compadd "$@" - $pack_switches $(ls srcpkgs)
+	;;
+	esac
+}
+
+_pack "$@"

@@ -1,0 +1,9 @@
+#!/usr/bin/env fish
+#
+# Call "grep -i" over templates.
+#
+# First argument is always treated as regexp.
+# Can be called outside of distdir.
+
+set -g distdir (realpath --relative-to=. (xdistdir))
+grep -i -r $distdir/srcpkgs --include template -e $argv

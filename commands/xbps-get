@@ -1,0 +1,22 @@
+#!/usr/bin/env fish
+#
+# Fetches binary package.
+#
+# Usage:
+# xbps-get PKGNAME
+#
+# Can be called outside of distdir.
+
+if test (count $argv) != 1
+	echo usage: xbps-get pkgname
+	exit 1
+end
+
+pushd (xdistdir)
+set pkgname $argv[1]
+set pkgver (./xbps-src show $pkgname | grep -Po '^version:\s+\K.+')
+set pkgrev (./xbps-src show $pkgname | grep -Po '^revision:\s+\K.+')
+set arch (./xbps-src show $pkgname | grep -Po '^archs:\s+\Knoarch'; or uname -m)
+popd
+set filename $pkgname'-'$pkgver'_'$pkgrev'.'$arch'.xbps'
+curl 'https://mirror.clarkson.edu/voidlinux/current/'$filename -o $filename

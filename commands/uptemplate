@@ -1,0 +1,64 @@
+#!/usr/bin/env fish
+#
+# Updates template to version found with update-check.
+#
+# Usage:
+# uptemplate [OPTION]... [PACKAGE]...
+#
+# Without arguments, updates packages maintained by you.
+#
+# Based on xupdate by thypon: https://github.com/leahneukirchen/xtools/issues/17
+#
+# -f FILE
+#	Updates packages listed in file.
+# -m EMAIL
+#	Updates packages maintained by EMAIL's holder.
+# -M
+#	Updates packages maintained by you.
+
+assert_xbps_src_dir
+
+function update_template -a package
+	set -l pkgversion (env XBPS_UPDATE_CHECK_VERBOSE= ./xbps-src update-check $package | grep -v 'as local repository' | tail -n 1 | grep -Poe " $package-\K.+" | tr - .)
+	set -l template srcpkgs/$package/template
+	if test "$pkgversion"
+		sed -i -e 's/^version=.*/version='$pkgversion'/' $template
+		sed -i -e 's/^revision=.*/revision=1/' $template
+	end
+	xgensum -i $template
+end
+
+set -g list
+
+if test -z "$argv"
+	set list (xmypkgs)
+end
+
+argparse \
+ f/file=+ \
+ m/maintainer=+ \
+ M/my \
+ -- $argv
+or begin
+	exit 1
+end
+
+set list $list $argv
+
+if test "$_flag_file"
+	set list $list (cat $_flag_file)
+end
+
+if test "$_flag_maintainer"
+	for i in "$_flag_maintainer"
+		set list $list (xmypkgs $i)
+	end
+end
+
+if test "$_flag_my"
+	set list $list (xmypkgs)
+end
+
+for i in $list
+	update_template $i
+end

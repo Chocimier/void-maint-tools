@@ -1,0 +1,17 @@
+#compdef uptemplate
+
+_uptemplate() {
+	local curcontext="$curcontext" state line VOID_DIR="$HOME/github/void-packages"
+	typeset -A opt_args
+
+	_arguments \
+		'1: :->package'
+
+	case $state in
+	package)
+		compadd - $pack_switches $(ls $VOID_DIR/srcpkgs)
+	;;
+	esac
+}
+
+_uptemplate "$@"

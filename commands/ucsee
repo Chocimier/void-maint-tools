@@ -1,0 +1,13 @@
+#!/usr/bin/env fish
+# Downloads url with same command as update-check do.
+#
+# Usage:
+#	ucsee URL
+
+assert_xbps_src_dir
+set comm (grep xbps-src-update-check common/xbps-src/shutils/update_check.sh |
+ tail -1 | tr -d '|' |
+ sed 's,"$url",'"$argv[1]"',;s,$XBPS_SRC_VERSION,113,'
+)
+echo $comm
+eval $comm

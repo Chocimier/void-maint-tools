@@ -1,0 +1,40 @@
+#!/usr/bin/env fish
+#
+# Removes and binary-bootstraps masterdirs
+#
+# Examples:
+# rebootstrap
+#	creates native masterdir/ and masterdir-x86_64-musl/ for musl
+# rebootstrap '' i686
+#	creates native masterdir/ and masterdir-i686/ for i686
+
+assert_xbps_src_dir
+
+function dir_name -a arch
+	if not test "$arch"
+		echo masterdir
+	else
+		echo masterdir-$arch
+	end
+end
+
+function arch_name -a arch
+	if test "$arch"
+		echo $arch
+	end
+end
+
+set things $argv
+if not count $things > /dev/null
+	set things '' x86_64-musl
+end
+
+for i in $things
+	set dir (dir_name $i)
+	rm -fr $dir
+	./xbps-src binary-bootstrap -m $dir (arch_name $i)
+	mkdir -p $dir/var/cache/xbps
+	for binpkg in hostdir/repocache*/*
+		ln $binpkg $dir/var/cache/xbps 2> /dev/null
+	end
+end

@@ -1,0 +1,14 @@
+#!/usr/bin/env fish
+#
+# Creates git repository in current directory.
+# Created for use used together with patchadd.
+# Can be called outside of distdir, obviously.
+
+if test -d .git
+	exit 0
+end
+
+git init .
+git add .
+git commit -m vanilla
+git tag vanilla

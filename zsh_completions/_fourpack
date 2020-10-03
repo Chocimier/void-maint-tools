@@ -1,0 +1,11 @@
+#compdef fourpack
+
+_fourpack() {
+	local curcontext="$curcontext" state line
+	typeset -A opt_args
+	local -a pack_switches=( "-r" "-k" "-Q" "-G" "--" )
+
+	compadd "$@" - $pack_switches $(ls srcpkgs)
+}
+
+_fourpack "$@"

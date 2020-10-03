@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Crates empty package depending on build-time deps of stated package.
+#
+# Can be called outside of distdir.
+
+. $(xdistdir)/srcpkgs/${1}/template
+deps=
+for i in $hostmakedepends $makedepends; do
+	deps="$deps $i>=0"
+done
+
+xbps-create -n ${1}-build-deps-${version}_${revision} \
+	-s "Build depends of ${1}" \
+	-A "$(xbps-uhelper arch)" \
+	-D "${deps}" \
+	$(mktemp -d)

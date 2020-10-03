@@ -1,0 +1,9 @@
+#!/usr/bin/env fish
+#
+# Call grep over "update" files.
+#
+# First argument is always treated as regexp.
+# Can be called outside of distdir.
+
+set -g distdir (realpath --relative-to=. (xdistdir))
+grep -r $distdir/srcpkgs --include update -e $argv

@@ -1,0 +1,3 @@
+#!/bin/sh
+xbps-query --regex -p repository -s / | grep -v -e ' https://' -e ': /hostdir' | cut -d: -f1
+

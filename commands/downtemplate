@@ -1,0 +1,11 @@
+#!/usr/bin/env fish
+#
+# Lowers version of templates.
+#
+# Can be used to test update-check.
+
+assert_xbps_src_dir
+
+for i in $argv
+	sed -i -e 's/^version=/&0./' srcpkgs/$i/template
+end

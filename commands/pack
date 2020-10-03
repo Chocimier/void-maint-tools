@@ -1,0 +1,114 @@
+#!/usr/bin/env fish
+#
+# Calls ./xbps-src clean + bootstrap-update + pkg -t
+#
+# Usage:
+# pack [flags of pack --] PACKAGE [flags of xbps-src]
+#
+# -m ARCH
+#	passes '-m masterdir-ARCH' to xbps-src
+#	and '-a ARCH' to bootstrap-update
+# -s STAGE
+#	runs STAGE rather than pkg
+# -v VOIDDIR
+#	changes working directory to VOIDDIR at first
+
+#defaults for options passed through commandline
+set -l voiddir .
+set -l stage pkg
+set -l masterarch
+set -l masterdir masterdir
+
+#internal variables
+set -g own_args
+set -g xbps_src_args
+
+#handle arguments
+
+if begin; test "$argv" = '-h'; or test "$argv" = '--help'; or test -z "$argv"; end
+	echo "pack package [args for ./xbps-src]"
+	echo "pack [-m masterarch] [-s stage] [-v voiddir] [-q|--quiet] [-V|--verbose] [--available] -- package [args for ./xbps-src]"
+	echo "pack [-h|--help]"
+	exit
+end
+
+distribute_args own_args xbps_src_args $argv
+argparse m/masterarch= s/stage= v/voiddir= a-available q/quiet V-verbose -- $own_args
+
+if test -n "$_flag_masterarch"
+	set masterarch $_flag_masterarch
+end
+
+if test -n "$_flag_stage"
+	set stage $_flag_stage
+end
+
+if test -n "$_flag_voiddir"
+	set voiddir $_flag_voiddir
+end
+
+if test -n "$_flag_available"
+	set querying_available
+end
+
+if test -n "$_flag_quiet"
+	set -g quiet
+end
+
+if test -n "$_flag_verbose"
+	set -g verbose
+end
+
+#prepare xbps-src arguments
+set -l package $xbps_src_args[1]
+set -l addargv
+if test (count $xbps_src_args) -gt 1
+	set addargv $xbps_src_args[2..-1]
+end
+
+if test -n "$masterarch"
+	set masterdir masterdir-$masterarch
+end
+if not contains -- "-C" $addargv
+	set addargv -t $addargv
+end
+
+#exit if no package stated
+if test -z "$package"
+	exit 1
+end
+
+cd $voiddir
+
+assert_xbps_src_dir
+
+#if readonly command
+if set -q querying_available
+	./xbps-src -m $masterdir $addargv show-avail $package
+	exit $status
+end
+
+#announce
+set_color blue
+echo Building $package in $masterdir for $addargv
+set_color normal
+
+#prepare builddir
+./xbps-src -m $masterdir clean > /dev/null 2> /dev/null
+and ./xbps-src -m $masterdir bootstrap-update $masterarch > /dev/null 2> /dev/null
+or begin
+	echo Bootstrapping failed
+	exit 1
+end
+
+#do the job
+./xbps-src -m $masterdir $addargv $stage $package
+and if set -q verbose
+	notify-send -t 0 -a "" "$package: succeed"
+end
+or begin
+	if not set -q quiet
+		notify-send -t 0 -i zoom-select -a "" "$package: failed to build"
+	end
+	false
+end

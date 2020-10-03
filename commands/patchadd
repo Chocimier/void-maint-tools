@@ -1,0 +1,43 @@
+#!/usr/bin/env fish
+#
+# Creates patch for stated void package.
+#
+# Workflow:
+# 1. Extract source archive and cd there
+# 2. Call "patchinitsrc"
+# 3. Prepare changes
+# 4. Call: patchadd PACKAGE "DESCRIPTION OF CHANGES"
+# 5. Build package - patch is already in right place
+# 6. Possibly go to step 3. Patch will refer to original sources.
+#
+# Can be called outside of distdir, obviously.
+
+set -g voiddir (xdistdir)
+
+if test (count $argv) != 2
+	echo "arguments: <package> <description>"
+	exit 1
+end
+
+# set parameters
+set -g package $argv[1]
+set -g description $argv[2]
+set -g pkgversion (eval $voiddir/xbps-src show $package | grep -P "^version" | cut -f2)
+
+# ensure patches/
+set patchdir $voiddir/srcpkgs/$package/patches
+mkdir -p $patchdir
+
+# make commit
+set -g commit_args
+if git tag | not grep vanilla
+	git tag vanilla
+	git checkout vanilla~0
+end
+if git log --oneline -1 | not grep -q vanilla
+	set commit_args --amend
+end
+git commit $commit_args -am $description
+
+# write patch
+git format-patch --no-prefix --no-stat --stdout vanilla > $patchdir/$pkgversion--$description.patch

@@ -1,0 +1,110 @@
+#!/usr/bin/env fish
+#
+# Calls "pack" script for four architectures
+#
+# Usage:
+# pack [flags of fourpack --] PACKAGE [flags of xbps-src]
+#
+# -k
+#	continues after any of build failed
+#	default is to exit after one fails
+# -Q
+#	ignores warnings from xlint
+#	default is to not build anything when there are warnings
+# -G
+#	skips call of xgensum, default is to call
+
+function message
+	echo "$argv" >> ~/.fourpack
+	notify-send -t 0 -a "" $argv
+end
+
+function try_pack
+	if pack --available $argv
+		pack $argv
+	else
+		message "unavailable package: $argv"
+	end
+end
+
+function done -a status_ package
+	if test "$status_" = 0
+		message "$package: succeed"
+	else
+		message -i zoom-select "$package: failed to build"
+	end
+	exit $status_
+end
+
+if begin; test "$argv" = '-h'; or test "$argv" = '--help'; or test -z "$argv"; end
+	echo "fourpack package [./xbps-src args]"
+	echo "fourpack [-rkQG] -- package [./xbps-src args]"
+	echo "fourpack [-h|--help]"
+	exit
+end
+
+assert_xbps_src_dir
+
+set -g own_args
+set -g xbps_src_args
+set -g keep_going
+
+distribute_args own_args xbps_src_args $argv
+argparse \
+	k/keep-going \
+	Q/xlint-ignore \
+	G/no-gensum \
+	r/runnable-first \
+	-- $own_args
+
+set -g pairs x86_64-musl:aarch64-musl
+if test -n "$_flag_r"
+	set -p pairs ""
+else
+	set -a pairs ""
+end
+
+set -a pairs x86_64-musl: :armv6l
+
+if test -n "$_flag_k"
+	set keep_going 1
+end
+
+set -g addargv
+if test (count $xbps_src_args) -gt 1
+	set addargv $xbps_src_args[2..-1]
+end
+
+set -l package $xbps_src_args[1]
+if not test "$_flag_G"
+	xgensum -i srcpkgs/$package/template
+end
+xlint srcpkgs/$package/template
+or if not begin set -q XLINT_IGNORE; or test -n "$_flag_Q"; end
+	done 1 $package
+end
+
+set -g any_fail 0
+
+for pair in $pairs
+	set -l elems (string split : $pair)
+	if test $elems[1]
+		set masterarch -m $elems[1]
+	else
+		set masterarch
+	end
+	if test $elems[2]
+		set target -a $elems[2]
+	else
+		set target
+	end
+	try_pack -q $masterarch -- $package $target $addargv
+	or if test "$keep_going"
+		set any_fail 1
+	else
+		done 1 $package
+		break
+	end
+end
+
+done $any_fail $package

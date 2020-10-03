@@ -1,0 +1,9 @@
+#!/usr/bin/env fish
+#
+# Call grep over xbps-src code and docs.
+#
+# First argument is always treated as regexp.
+# Can be called outside of distdir.
+
+set -g distdir (realpath --relative-to=. (xdistdir))
+grep -e $argv $distdir/xbps-src -r $distdir/common -r $distdir/etc $distdir/CONTRIBUTING.md $distdir/Manual.md $distdir/README.md

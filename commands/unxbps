@@ -1,0 +1,14 @@
+#!/usr/bin/env fish
+#
+# Extracts stated binary packages, or all in cwd if no stated.
+
+set -g packages $argv
+if test -z "$packages"
+	set packages *.xbps
+end
+
+for package in $packages
+	set -l dir (string replace -r '.[^.]*$' '' $package)
+	mkdir $dir
+	tar --zstd -x -f $package -C $dir || tar xfJ $package -C $dir
+end
