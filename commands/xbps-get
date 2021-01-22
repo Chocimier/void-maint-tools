@@ -17,6 +17,7 @@ set pkgname $argv[1]
 set pkgver (./xbps-src show $pkgname | grep -Po '^version:\s+\K.+')
 set pkgrev (./xbps-src show $pkgname | grep -Po '^revision:\s+\K.+')
 set arch (./xbps-src show $pkgname | grep -Po '^archs:\s+\Knoarch'; or uname -m)
+set repository (grep repository= srcpkgs/$pkgname/template | cut -d= -f2 | tr -d '"'"'")
 popd
 set filename $pkgname'-'$pkgver'_'$pkgrev'.'$arch'.xbps'
-curl -f 'https://mirror.clarkson.edu/voidlinux/current/'$filename -o $filename
+curl -f 'https://mirror.clarkson.edu/voidlinux/current/'$repository/$filename -o $filename
