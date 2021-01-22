@@ -1,0 +1,18 @@
+#!/usr/bin/env fish
+# Shows ordering of version string accordng to xbps
+#
+# Can be called outside of distdir.
+#
+# Example:
+#	xcmpver 1.1 1b
+
+xbps-uhelper cmpver $argv[1] $argv[2]
+switch $status
+	case 0
+		set rel =
+	case 1
+		set rel '>'
+	case 255 -1
+		set rel '<'
+end
+echo $argv[1] $rel $argv[2]
