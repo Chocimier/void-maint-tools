@@ -34,6 +34,7 @@ end
 
 distribute_args own_args xbps_src_args $argv
 argparse m/masterarch= s/stage= v/voiddir= a-available q/quiet V-verbose -- $own_args
+or exit $status
 
 if test -n "$_flag_masterarch"
 	set masterarch $_flag_masterarch
@@ -66,6 +67,7 @@ if test (count $xbps_src_args) -gt 1
 	set addargv $xbps_src_args[2..-1]
 end
 
+
 if test -n "$masterarch"
 	set masterdir masterdir-$masterarch
 end
@@ -74,8 +76,11 @@ if not contains -- "-C" $addargv
 end
 
 #exit if no package stated
-if test -z "$package"
-	exit 1
+switch $package
+	case '' '-*'
+		set script (basename (status filename))
+		echo error, call it like: $script [args for $script --] package [args for xbps-src]
+		exit 1
 end
 
 cd $voiddir
