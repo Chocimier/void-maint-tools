@@ -7,7 +7,7 @@ _pack() {
 
 	case $words[-2] in
 	-a)
-		compadd "$@" $(ls common/cross-profiles/ | grep -P '\.sh$' | grep -v musl | xargs -n 1 basename -s .sh)
+		compadd "$@" $(ls hostdir/ | grep repocache | sed s/repocache-//)
 	;;
 	-m)
 		compadd "$@" $(ls | grep -F 'masterdir-' | cut -d - -f 2-)
