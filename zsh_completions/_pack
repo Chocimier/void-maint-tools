@@ -7,19 +7,19 @@ _pack() {
 
 	case $words[-2] in
 	-a)
-		compadd "$@" $(ls hostdir/ | grep repocache | sed s/repocache-//)
+		[ -d hostdir ] && compadd "$@" $(ls hostdir/ | grep repocache | sed s/repocache-//)
 	;;
 	-m)
 		compadd "$@" $(ls | grep -F 'masterdir-' | cut -d - -f 2-)
 	;;
 	-s)
-		compadd "$@" $(./xbps-src | grep pkgname | grep -P '^\S'| cut -d \  -f 1)
+		[ -x ./xbps-src ] && compadd "$@" $(./xbps-src | grep pkgname | grep -P '^\S'| cut -d \  -f 1)
 	;;
 	--)
-		compadd "$@" $(ls srcpkgs)
+		[ -d srcpkgs ] && compadd "$@" $(ls srcpkgs)
 	;;
 	*)
-		compadd "$@" - $pack_switches $(ls srcpkgs)
+		[ -d srcpkgs ] && compadd "$@" - $pack_switches $(ls srcpkgs)
 	;;
 	esac
 }
