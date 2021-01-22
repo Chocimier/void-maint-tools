@@ -20,5 +20,6 @@ See also:
 - <https://github.com/leahneukirchen/git-merge-pr>
 - <https://github.com/maxice8/meltryllis/tree/f04ce4df730135a1253d9c26dd5574edd2d0498a>
 - <https://github.com/Noah-Huppert/xbpsvenv>
+- <https://github.com/Piraty/xxtools>
 
 [fisher]: https://github.com/jorgebucaran/fisher
