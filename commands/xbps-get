@@ -19,4 +19,4 @@ set pkgrev (./xbps-src show $pkgname | grep -Po '^revision:\s+\K.+')
 set arch (./xbps-src show $pkgname | grep -Po '^archs:\s+\Knoarch'; or uname -m)
 popd
 set filename $pkgname'-'$pkgver'_'$pkgrev'.'$arch'.xbps'
-curl 'https://mirror.clarkson.edu/voidlinux/current/'$filename -o $filename
+curl -f 'https://mirror.clarkson.edu/voidlinux/current/'$filename -o $filename
