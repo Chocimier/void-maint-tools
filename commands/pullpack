@@ -9,7 +9,14 @@ function main
 assert_xbps_src_dir
 
 # parse arguments
-set flags r/remote= u/url= b/branch= p/pkgname= B/no-build
+set flags \
+	r/remote= \
+	u/url= \
+	b/branch= \
+	n/number= \
+	p/pkgname= \
+	B/no-build \
+
 
 if not test "$argv"
 	echo $flags
@@ -17,20 +24,38 @@ if not test "$argv"
 end
 
 argparse $flags -- $argv
+set -l remote
+set -l url
+set -l branch
+set -l pkgname
 
-# error if arguments lack
-set -l remote $_flag_remote
-test "$remote"; or begin echo pass --remote; exit 2; end
+if set -q _flag_number
+	# error on too many flags
+	if begin; set -q _flag_remote; or set -q _flag_url; or set -q _flag_branch; end
+		echo "Flag -n can't be combined with -r, -u or -b."
+		exit 2
+	end
 
-set -l branch $_flag_branch
-test "$branch"; or begin echo pass --branch; exit 2; end
+	if test "$_flag_pkgname"
+		set pkgname $_flag_pkgname
+	end
+	set remote origin
+	set branch pull/$_flag_number/head
+else
+	# error if arguments lack
+	set remote $_flag_remote
 
-# guess pkgname if not given
-set -l pkgname $_flag_pkgname
-if test -z "$pkgname"
-	set pkgname $branch
+	set branch $_flag_branch
+
+	# guess pkgname if not given
+	set pkgname $_flag_pkgname
+	if test -z "$pkgname"
+		set pkgname $branch
+	end
+	set url $_flag_url
 end
-set -l url $_flag_url
+test "$branch"; or begin echo pass --branch; exit 2; end
+test "$remote"; or begin echo pass --remote; exit 2; end
 
 # configure remote
 if git config 'remote.'$remote'.url' > /dev/null
@@ -38,18 +63,25 @@ if git config 'remote.'$remote'.url' > /dev/null
 		git remote set-url $remote $url
 	end
 else
-	test "$url"; or begin echo pass --url; exit 2; end
+	if set -q _flag_number
+		echo Missing '"'$remote'"' remote
+		exit 2
+	end
+	if test -z "$url"
+		echo pass --url
+		exit 2
+	end
 	git remote add $remote $url
 end
 
 # fetch
-git fetch --prune $remote
-git checkout $remote/$branch; or exit 3
+git fetch --prune $remote $branch
+git checkout FETCH_HEAD; or exit 3
 git fetch origin
 git rebase --autostash origin/master; or exit 4
 
 # build
-if not set -q _flag_B
+if begin; test "$pkgname"; and not set -q _flag_B; end
 	pack $pkgname
 end
 
