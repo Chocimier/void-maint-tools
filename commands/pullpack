@@ -16,6 +16,7 @@ set flags \
 	n/number= \
 	p/pkgname= \
 	B/no-build \
+	R/no-rebase \
 
 
 if not test "$argv"
@@ -77,8 +78,10 @@ end
 # fetch
 git fetch --prune $remote $branch
 git checkout FETCH_HEAD; or exit 3
-git fetch origin
-git rebase --autostash origin/master; or exit 4
+if not set -q _flag_R
+	git fetch origin
+	git rebase --autostash origin/master; or exit 4
+end
 
 # build
 if begin; test "$pkgname"; and not set -q _flag_B; end
