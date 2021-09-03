@@ -40,4 +40,4 @@ end
 git commit $commit_args -am $description
 
 # write patch
-git format-patch --no-prefix --no-stat --stdout vanilla > $patchdir/$pkgversion--$description.patch
+git format-patch --no-stat --stdout vanilla > $patchdir/$pkgversion--$description.patch
