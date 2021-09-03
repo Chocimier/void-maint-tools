@@ -17,7 +17,18 @@ set pkgname $argv[1]
 set pkgver (./xbps-src show $pkgname | grep -Po '^version:\s+\K.+')
 set pkgrev (./xbps-src show $pkgname | grep -Po '^revision:\s+\K.+')
 set arch (./xbps-src show $pkgname | grep -Po '^archs:\s+\Knoarch'; or uname -m)
+if set -q XBPS_TARGET_ARCH
+	set arch $XBPS_TARGET_ARCH
+end
 set repository (echo (grep repository= srcpkgs/$pkgname/template | cut -d= -f2 | tr -d '"'"'")/)
+if string match '*-musl' $arch
+	set repository musl/$repository
+end
 popd
 set filename $pkgname'-'$pkgver'_'$pkgrev'.'$arch'.xbps'
-curl -f 'https://mirror.clarkson.edu/voidlinux/current/'$repository$filename -o $filename
+set url 'https://mirror.clarkson.edu/voidlinux/current/'$repository$filename
+curl -f $url -o $filename
+or begin
+	echo Failed to download $url
+	false
+end
