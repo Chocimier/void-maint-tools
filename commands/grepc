@@ -6,4 +6,4 @@
 # Can be called outside of distdir.
 
 set -g distdir (realpath --relative-to=. (xdistdir))
-grep -e $argv $distdir/xbps-src -r $distdir/common -r $distdir/etc $distdir/CONTRIBUTING.md $distdir/Manual.md $distdir/README.md -r .github
+grep -e $argv $distdir/xbps-src -r $distdir/common -r $distdir/etc $distdir/CONTRIBUTING.md $distdir/Manual.md $distdir/README.md -r $distdir/.github
