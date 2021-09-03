@@ -24,6 +24,15 @@ function arch_name -a arch
 	end
 end
 
+function cross_arch -a arch
+	switch $arch
+		case x86_64-musl
+			echo aarch64-musl
+		case ''
+			echo armv6l
+	end
+end
+
 set things $argv
 if not count $things > /dev/null
 	set things '' x86_64-musl
@@ -33,6 +42,8 @@ for i in $things
 	set dir (dir_name $i)
 	rm -fr $dir
 	./xbps-src binary-bootstrap -m $dir (arch_name $i)
+	or exit 1
+	./xbps-src pkg base-minimal -t -m $dir -a(cross_arch $i)
 	mkdir -p $dir/var/cache/xbps
 	for binpkg in hostdir/repocache*/*
 		ln $binpkg $dir/var/cache/xbps 2> /dev/null
