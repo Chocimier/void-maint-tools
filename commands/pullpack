@@ -17,6 +17,7 @@ set flags \
 	p/pkgname= \
 	B/no-build \
 	R/no-rebase \
+	m/many-targets \
 
 
 if not test "$argv"
@@ -85,7 +86,11 @@ end
 
 # build
 if begin; test "$pkgname"; and not set -q _flag_B; end
-	pack $pkgname
+	if set -q _flag_m
+		fourpack $pkgname
+	else
+		pack $pkgname
+	end
 end
 
 end # main
