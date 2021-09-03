@@ -18,6 +18,7 @@ set flags \
 	B/no-build \
 	R/no-rebase \
 	m/many-targets \
+	e/edit \
 
 
 if not test "$argv"
@@ -86,7 +87,9 @@ end
 
 # build
 if begin; test "$pkgname"; and not set -q _flag_B; end
-	if set -q _flag_m
+	if set -q _flag_e
+		find srcpkgs/$pkgname -type f -exec (string split ' ' $EDITOR) '{}' '+'
+	else if set -q _flag_m
 		fourpack $pkgname
 	else
 		pack $pkgname
