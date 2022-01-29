@@ -21,7 +21,9 @@ if set -q XBPS_TARGET_ARCH
 	set arch $XBPS_TARGET_ARCH
 end
 set repository (echo (grep repository= srcpkgs/$pkgname/template | cut -d= -f2 | tr -d '"'"'")/)
-if string match '*-musl' $arch
+if string match 'aarch*' $arch
+	set repository aarch64/$repository
+else if string match '*-musl' $arch
 	set repository musl/$repository
 end
 popd
