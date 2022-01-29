@@ -8,6 +8,8 @@
 # -k
 #	continues after any of build failed
 #	default is to exit after one fails
+# -q
+#	doesn't display notification on successful completion
 # -Q
 #	ignores warnings from xlint
 #	default is to not build anything when there are warnings
@@ -29,7 +31,9 @@ end
 
 function done -a status_ package
 	if test "$status_" = 0
-		message "$package: succeed"
+		if test -z "$quiet"
+			message "$package: succeed"
+		end
 	else
 		message -i zoom-select "$package: failed to build"
 	end
@@ -48,6 +52,7 @@ assert_xbps_src_dir
 set -g own_args
 set -g xbps_src_args
 set -g keep_going
+set -g quiet
 
 distribute_args own_args xbps_src_args $argv
 argparse \
@@ -55,6 +60,7 @@ argparse \
 	Q/xlint-ignore \
 	G/no-gensum \
 	r/runnable-first \
+	q/quiet \
 	-- $own_args
 
 set -g pairs x86_64-musl:aarch64-musl
@@ -68,6 +74,10 @@ set -a pairs x86_64-musl: :armv6l
 
 if test -n "$_flag_k"
 	set keep_going 1
+end
+
+if test -n "$_flag_q"
+	set quiet 1
 end
 
 set -g addargv
