@@ -19,6 +19,7 @@ set flags \
 	f/fetch-only \
 	m/many-targets \
 	e/edit \
+	i/interactive-rebase
 
 
 if not test "$argv"
@@ -84,6 +85,9 @@ if set -q _flag_fetch_only
 end
 git checkout FETCH_HEAD; or exit 3
 git fetch origin
+if set -q _flag_i
+	set rebase_flags -i
+end
 git rebase --autostash $rebase_flags origin/master; or exit 4
 
 # build
