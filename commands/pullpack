@@ -90,11 +90,14 @@ if set -q _flag_i
 end
 git rebase --autostash $rebase_flags origin/master; or exit 4
 
+# edit files
+if set -q _flag_e
+	find srcpkgs/$pkgname -type f -exec (string split ' ' $EDITOR) '{}' '+' || exit
+end
+
 # build
 if begin; test "$pkgname"; and not set -q _flag_B; end
-	if set -q _flag_e
-		find srcpkgs/$pkgname -type f -exec (string split ' ' $EDITOR) '{}' '+'
-	else if set -q _flag_m
+	if set -q _flag_m
 		fourpack $pkgname
 	else
 		pack $pkgname
